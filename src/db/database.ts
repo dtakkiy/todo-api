@@ -1,11 +1,8 @@
 import path from 'node:path';
 import Database from 'better-sqlite3';
-import dotenv from 'dotenv';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import * as schema from './schema';
-
-dotenv.config();
 
 const DB_PATH = process.env.DB_PATH ?? './todos.db';
 
