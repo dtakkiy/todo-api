@@ -36,6 +36,27 @@ pnpm build  # ビルド
 pnpm start  # 本番
 ```
 
+## Hono RPC
+
+API の型定義をクライアント側で利用できます。
+
+```ts
+import { hc } from 'hono/client';
+import type { AppType } from '@/api/app'; // サーバー側の app.ts を参照
+
+const client = hc<AppType>('http://localhost:3000');
+
+// 型安全なリクエスト
+const res = await client.api.todos.$get();
+const todos = await res.json();
+
+const created = await client.api.todos.$post({
+  json: { title: 'Buy milk' },
+});
+```
+
+エンドポイントの追加・変更はサーバー側の型定義がクライアントに即時反映されます。
+
 ## エンドポイント
 
 | Method | Path | 説明 |
