@@ -4,6 +4,11 @@ import db from '../db/database';
 import { type TodoRow, todos } from '../db/schema';
 import { createTodoSchema, updateTodoSchema } from '../schemas/todoSchema';
 
+const parseId = (raw: string): number | null => {
+  const n = Number(raw);
+  return Number.isInteger(n) && n > 0 ? n : null;
+};
+
 export const getAllTodos = (c: Context): Response => {
   const completed = c.req.query('completed');
 
@@ -19,12 +24,11 @@ export const getAllTodos = (c: Context): Response => {
 };
 
 export const getTodoById = (c: Context): Response => {
-  const id = c.req.param('id');
-  const row = db
-    .select()
-    .from(todos)
-    .where(eq(todos.id, Number(id)))
-    .get();
+  const id = parseId(c.req.param('id'));
+  if (id === null) {
+    return c.json({ error: 'Invalid ID' }, 400);
+  }
+  const row = db.select().from(todos).where(eq(todos.id, id)).get();
 
   if (!row) {
     return c.json({ error: 'Todo not found' }, 404);
@@ -51,12 +55,11 @@ export const createTodo = async (c: Context): Promise<Response> => {
 };
 
 export const updateTodo = async (c: Context): Promise<Response> => {
-  const id = c.req.param('id');
-  const existing = db
-    .select()
-    .from(todos)
-    .where(eq(todos.id, Number(id)))
-    .get();
+  const id = parseId(c.req.param('id'));
+  if (id === null) {
+    return c.json({ error: 'Invalid ID' }, 400);
+  }
+  const existing = db.select().from(todos).where(eq(todos.id, id)).get();
 
   if (!existing) {
     return c.json({ error: 'Todo not found' }, 404);
@@ -77,7 +80,7 @@ export const updateTodo = async (c: Context): Promise<Response> => {
       completed: data.completed !== undefined ? data.completed : existing.completed,
       updated_at: sql`(datetime('now'))`,
     })
-    .where(eq(todos.id, Number(id)))
+    .where(eq(todos.id, id))
     .returning()
     .all();
 
@@ -89,11 +92,11 @@ export const patchTodo = async (c: Context): Promise<Response> => {
 };
 
 export const deleteTodo = (c: Context): Response => {
-  const id = c.req.param('id');
-  const info = db
-    .delete(todos)
-    .where(eq(todos.id, Number(id)))
-    .run();
+  const id = parseId(c.req.param('id'));
+  if (id === null) {
+    return c.json({ error: 'Invalid ID' }, 400);
+  }
+  const info = db.delete(todos).where(eq(todos.id, id)).run();
 
   if (info.changes === 0) {
     return c.json({ error: 'Todo not found' }, 404);
