@@ -1,13 +1,17 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import * as schema from './schema';
 
-const DB_PATH = process.env.DB_PATH ?? './todos.db';
+const DB_PATH = process.env.DB_PATH ?? './db/todos.db';
 
 let sqlite: Database.Database;
 try {
+  if (DB_PATH !== ':memory:') {
+    fs.mkdirSync(path.dirname(path.resolve(DB_PATH)), { recursive: true });
+  }
   sqlite = DB_PATH === ':memory:' ? new Database(':memory:') : new Database(path.resolve(DB_PATH));
   sqlite.pragma('journal_mode = WAL');
   sqlite.pragma('foreign_keys = ON');
@@ -21,7 +25,7 @@ export { sqlite };
 export const db = drizzle(sqlite, { schema });
 try {
   migrate(db, {
-    migrationsFolder: process.env.MIGRATIONS_PATH ?? path.join(process.cwd(), 'drizzle'),
+    migrationsFolder: process.env.MIGRATIONS_PATH ?? path.join(process.cwd(), 'db/migrations'),
   });
 } catch (err) {
   console.error('Migration failed:', err);
