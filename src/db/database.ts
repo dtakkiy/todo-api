@@ -16,6 +16,8 @@ sqlite.pragma('journal_mode = WAL');
 sqlite.pragma('foreign_keys = ON');
 
 export const db = drizzle(sqlite, { schema });
-migrate(db, { migrationsFolder: path.resolve(__dirname, '../../drizzle') });
+migrate(db, {
+  migrationsFolder: process.env.MIGRATIONS_PATH ?? path.join(process.cwd(), 'drizzle'),
+});
 
 export default db;
