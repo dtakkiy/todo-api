@@ -1,0 +1,40 @@
+{
+  "name": "todo-api",
+  "version": "1.0.0",
+  "description": "Todo API with Express, TypeScript, and SQLite",
+  "main": "dist/index.js",
+  "packageManager": "pnpm@9.12.3",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "biome lint ./src",
+    "format": "biome format --write ./src",
+    "check": "biome check ./src",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "prepare": "husky",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.9",
+    "better-sqlite3": "^9.4.3",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.45.1",
+    "hono": "^4.12.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.6.0",
+    "@types/better-sqlite3": "^7.6.8",
+    "@types/node": "^20.11.20",
+    "drizzle-kit": "^0.31.9",
+    "husky": "^9.0.11",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.3.3",
+    "vitest": "^4.0.18"
+  }
+}
