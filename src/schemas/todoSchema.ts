@@ -9,13 +9,17 @@ export const createTodoSchema = z.object({
 });
 
 export const updateTodoSchema = z.object({
-  title: z.string().min(1).max(200).optional(),
+  title: z
+    .string()
+    .min(1, 'Title is required')
+    .max(200, 'Title must be 200 characters or less')
+    .optional(),
   description: z.string().nullable().optional(),
   completed: z.boolean().optional(),
 });
 
 export const replaceTodoSchema = z.object({
-  title: z.string().min(1).max(200),
+  title: z.string().min(1, 'Title is required').max(200, 'Title must be 200 characters or less'),
   description: z.string().nullable().optional(),
   completed: z.boolean().optional(),
 });
