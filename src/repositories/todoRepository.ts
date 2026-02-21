@@ -1,12 +1,7 @@
 import { desc, eq, sql } from 'drizzle-orm';
 import db from '../infrastructure/database';
 import { type TodoRow, todos } from '../infrastructure/schema';
-
-type UpdateInput = {
-  title?: string;
-  description?: string | null;
-  completed?: boolean;
-};
+import type { ReplaceTodoInput, UpdateTodoInput } from '../schemas/todoSchema';
 
 export const todoRepository = {
   findAll(completed?: boolean): TodoRow[] {
@@ -28,7 +23,7 @@ export const todoRepository = {
     return db.insert(todos).values({ title, description }).returning().all()[0];
   },
 
-  update(id: number, data: UpdateInput, existing: TodoRow): TodoRow {
+  update(id: number, data: UpdateTodoInput, existing: TodoRow): TodoRow {
     return db
       .update(todos)
       .set({
@@ -42,10 +37,7 @@ export const todoRepository = {
       .all()[0];
   },
 
-  replace(
-    id: number,
-    data: { title: string; description?: string | null; completed?: boolean },
-  ): TodoRow {
+  replace(id: number, data: ReplaceTodoInput): TodoRow {
     return db
       .update(todos)
       .set({

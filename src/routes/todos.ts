@@ -3,13 +3,12 @@ import { Hono } from 'hono';
 import type { Context, Env } from 'hono';
 import { HttpStatus } from '../constants/httpStatus';
 import { todoRepository } from '../repositories/todoRepository';
+import type { Todo } from '../schemas/todoSchema';
 import {
   completedQuerySchema,
   createTodoSchema,
   idParamSchema,
   replaceTodoSchema,
-  todoListSchema,
-  todoSchema,
   updateTodoSchema,
 } from '../schemas/todoSchema';
 
@@ -22,21 +21,17 @@ const notFound = (c: Context) => c.json({ error: 'Todo not found' }, HttpStatus.
 const router = new Hono()
   .get('/', zValidator('query', completedQuerySchema), (c) => {
     const { completed } = c.req.valid('query');
-    const filter = completed !== undefined ? completed === 'true' : undefined;
-    return c.json(todoListSchema.parse(todoRepository.findAll(filter)));
+    return c.json(todoRepository.findAll(completed) as Todo[]);
   })
   .get('/:id', zValidator('param', idParamSchema, paramErrorHandler), (c) => {
     const { id } = c.req.valid('param');
     const todo = todoRepository.findById(id);
     if (!todo) return notFound(c);
-    return c.json(todoSchema.parse(todo));
+    return c.json(todo as Todo);
   })
   .post('/', zValidator('json', createTodoSchema), (c) => {
     const { title, description } = c.req.valid('json');
-    return c.json(
-      todoSchema.parse(todoRepository.create(title, description ?? null)),
-      HttpStatus.CREATED,
-    );
+    return c.json(todoRepository.create(title, description) as Todo, HttpStatus.CREATED);
   })
   .put(
     '/:id',
@@ -48,7 +43,7 @@ const router = new Hono()
       const existing = todoRepository.findById(id);
       if (!existing) return notFound(c);
 
-      return c.json(todoSchema.parse(todoRepository.replace(id, c.req.valid('json'))));
+      return c.json(todoRepository.replace(id, c.req.valid('json')) as Todo);
     },
   )
   .patch(
@@ -61,7 +56,7 @@ const router = new Hono()
       const existing = todoRepository.findById(id);
       if (!existing) return notFound(c);
 
-      return c.json(todoSchema.parse(todoRepository.update(id, c.req.valid('json'), existing)));
+      return c.json(todoRepository.update(id, c.req.valid('json'), existing) as Todo);
     },
   )
   .delete('/:id', zValidator('param', idParamSchema, paramErrorHandler), (c) => {
