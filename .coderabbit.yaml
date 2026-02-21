@@ -1,0 +1,20 @@
+language: "ja-JP"
+
+reviews:
+  # PRの要約を自動生成
+  auto_review:
+    enabled: true
+
+  # レビューで無視するファイル（自動生成ファイルなど）
+  path_filters:
+    - "!**/*.lock"
+    - "!**/package-lock.json"
+    - "!**/yarn.lock"
+    - "!**/pnpm-lock.yaml"
+    - "!**/dist/**"
+    - "!**/build/**"
+    - "!**/*.min.js"
+    - "!**/*.min.css"
+
+  # 細かすぎる指摘を減らす
+  profile: "chill"
