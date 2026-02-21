@@ -73,6 +73,11 @@ describe('GET /api/todos', () => {
     expect(body[0].title).toBe('未完了Todo');
     expect(body[0].completed).toBe(false);
   });
+
+  it('不正なcompletedクエリパラメータで400を返す', async () => {
+    const res = await req('GET', '/api/todos?completed=maybe');
+    expect(res.status).toBe(400);
+  });
 });
 
 describe('GET /api/todos/:id', () => {
@@ -102,6 +107,16 @@ describe('GET /api/todos/:id', () => {
 
   it('不正なIDで400を返す', async () => {
     const res = await req('GET', '/api/todos/abc');
+    expect(res.status).toBe(400);
+  });
+
+  it('負のIDで400を返す', async () => {
+    const res = await req('GET', '/api/todos/-1');
+    expect(res.status).toBe(400);
+  });
+
+  it('小数のIDで400を返す', async () => {
+    const res = await req('GET', '/api/todos/1.5');
     expect(res.status).toBe(400);
   });
 });
@@ -155,6 +170,16 @@ describe('PUT /api/todos/:id', () => {
     expect(res.status).toBe(404);
   });
 
+  it('負のIDで400を返す', async () => {
+    const res = await req('PUT', '/api/todos/-1', { title: '更新' });
+    expect(res.status).toBe(400);
+  });
+
+  it('小数のIDで400を返す', async () => {
+    const res = await req('PUT', '/api/todos/1.5', { title: '更新' });
+    expect(res.status).toBe(400);
+  });
+
   it('titleなしのPUTは400を返す', async () => {
     const createdBody = await json(await req('POST', '/api/todos', { title: '元のタイトル' }));
     const res = await req('PUT', `/api/todos/${createdBody.id}`, { completed: true });
@@ -201,6 +226,16 @@ describe('PUT /api/todos/:id', () => {
 });
 
 describe('PATCH /api/todos/:id', () => {
+  it('負のIDで400を返す', async () => {
+    const res = await req('PATCH', '/api/todos/-1', { completed: true });
+    expect(res.status).toBe(400);
+  });
+
+  it('小数のIDで400を返す', async () => {
+    const res = await req('PATCH', '/api/todos/1.5', { completed: true });
+    expect(res.status).toBe(400);
+  });
+
   it('completedフラグだけ更新できる', async () => {
     const createdBody = await json(await req('POST', '/api/todos', { title: 'テストTodo' }));
 
@@ -230,6 +265,16 @@ describe('DELETE /api/todos/:id', () => {
   it('存在しないIDで404を返す', async () => {
     const res = await req('DELETE', '/api/todos/99999');
     expect(res.status).toBe(404);
+  });
+
+  it('負のIDで400を返す', async () => {
+    const res = await req('DELETE', '/api/todos/-1');
+    expect(res.status).toBe(400);
+  });
+
+  it('小数のIDで400を返す', async () => {
+    const res = await req('DELETE', '/api/todos/1.5');
+    expect(res.status).toBe(400);
   });
 
   it('Todoを削除すると204を返す', async () => {
