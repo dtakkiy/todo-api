@@ -1,7 +1,5 @@
-import { desc, eq, sql } from 'drizzle-orm';
 import type { Context } from 'hono';
-import db from '../db/database';
-import { type TodoRow, todos } from '../db/schema';
+import { todoRepository } from '../repositories/todoRepository';
 import { createTodoSchema, updateTodoSchema } from '../schemas/todoSchema';
 
 const parseId = (raw: string): number | null => {
@@ -11,30 +9,18 @@ const parseId = (raw: string): number | null => {
 
 export const getAllTodos = (c: Context): Response => {
   const completed = c.req.query('completed');
-
-  const query = db.select().from(todos);
-
-  if (completed === 'true') {
-    return c.json(query.where(eq(todos.completed, true)).orderBy(desc(todos.created_at)).all());
-  }
-  if (completed === 'false') {
-    return c.json(query.where(eq(todos.completed, false)).orderBy(desc(todos.created_at)).all());
-  }
-  return c.json(query.orderBy(desc(todos.created_at)).all());
+  const filter = completed === 'true' ? true : completed === 'false' ? false : undefined;
+  return c.json(todoRepository.findAll(filter));
 };
 
 export const getTodoById = (c: Context): Response => {
   const id = parseId(c.req.param('id'));
-  if (id === null) {
-    return c.json({ error: 'Invalid ID' }, 400);
-  }
-  const row = db.select().from(todos).where(eq(todos.id, id)).get();
+  if (id === null) return c.json({ error: 'Invalid ID' }, 400);
 
-  if (!row) {
-    return c.json({ error: 'Todo not found' }, 404);
-  }
+  const todo = todoRepository.findById(id);
+  if (!todo) return c.json({ error: 'Todo not found' }, 404);
 
-  return c.json(row);
+  return c.json(todo);
 };
 
 export const createTodo = async (c: Context): Promise<Response> => {
@@ -45,25 +31,15 @@ export const createTodo = async (c: Context): Promise<Response> => {
   }
 
   const { title, description } = result.data;
-  const rows = db
-    .insert(todos)
-    .values({ title, description: description ?? null })
-    .returning()
-    .all();
-
-  return c.json(rows[0], 201);
+  return c.json(todoRepository.create(title, description ?? null), 201);
 };
 
 export const updateTodo = async (c: Context): Promise<Response> => {
   const id = parseId(c.req.param('id'));
-  if (id === null) {
-    return c.json({ error: 'Invalid ID' }, 400);
-  }
-  const existing = db.select().from(todos).where(eq(todos.id, id)).get();
+  if (id === null) return c.json({ error: 'Invalid ID' }, 400);
 
-  if (!existing) {
-    return c.json({ error: 'Todo not found' }, 404);
-  }
+  const existing = todoRepository.findById(id);
+  if (!existing) return c.json({ error: 'Todo not found' }, 404);
 
   const body = await c.req.json();
   const result = updateTodoSchema.safeParse(body);
@@ -71,20 +47,7 @@ export const updateTodo = async (c: Context): Promise<Response> => {
     return c.json({ error: 'Validation failed', details: result.error.flatten() }, 400);
   }
 
-  const data = result.data;
-  const rows = db
-    .update(todos)
-    .set({
-      title: data.title ?? existing.title,
-      description: data.description !== undefined ? data.description : existing.description,
-      completed: data.completed !== undefined ? data.completed : existing.completed,
-      updated_at: sql`(datetime('now'))`,
-    })
-    .where(eq(todos.id, id))
-    .returning()
-    .all();
-
-  return c.json(rows[0]);
+  return c.json(todoRepository.update(id, result.data, existing));
 };
 
 export const patchTodo = async (c: Context): Promise<Response> => {
@@ -93,14 +56,10 @@ export const patchTodo = async (c: Context): Promise<Response> => {
 
 export const deleteTodo = (c: Context): Response => {
   const id = parseId(c.req.param('id'));
-  if (id === null) {
-    return c.json({ error: 'Invalid ID' }, 400);
-  }
-  const info = db.delete(todos).where(eq(todos.id, id)).run();
+  if (id === null) return c.json({ error: 'Invalid ID' }, 400);
 
-  if (info.changes === 0) {
-    return c.json({ error: 'Todo not found' }, 404);
-  }
+  const deleted = todoRepository.remove(id);
+  if (!deleted) return c.json({ error: 'Todo not found' }, 404);
 
   return c.body(null, 204);
 };

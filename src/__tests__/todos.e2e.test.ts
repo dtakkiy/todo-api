@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import app from '../app';
-import { sqlite } from '../db/database';
+import { sqlite } from '../infrastructure/database';
 
 // biome-ignore lint/suspicious/noExplicitAny: test helper
 type AnyJson = any;
