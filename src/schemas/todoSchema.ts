@@ -2,7 +2,10 @@ import { z } from 'zod';
 
 export const createTodoSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be 200 characters or less'),
-  description: z.string().optional(),
+  description: z
+    .string()
+    .optional()
+    .transform((v) => v ?? null),
 });
 
 export const updateTodoSchema = z.object({
@@ -33,7 +36,10 @@ export const idParamSchema = z.object({
 });
 
 export const completedQuerySchema = z.object({
-  completed: z.enum(['true', 'false']).optional(),
+  completed: z
+    .enum(['true', 'false'])
+    .transform((v) => v === 'true')
+    .optional(),
 });
 
 export type CreateTodoInput = z.infer<typeof createTodoSchema>;

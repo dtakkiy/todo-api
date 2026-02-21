@@ -22,8 +22,7 @@ const notFound = (c: Context) => c.json({ error: 'Todo not found' }, HttpStatus.
 const router = new Hono()
   .get('/', zValidator('query', completedQuerySchema), (c) => {
     const { completed } = c.req.valid('query');
-    const filter = completed !== undefined ? completed === 'true' : undefined;
-    return c.json(todoListSchema.parse(todoRepository.findAll(filter)));
+    return c.json(todoListSchema.parse(todoRepository.findAll(completed)));
   })
   .get('/:id', zValidator('param', idParamSchema, paramErrorHandler), (c) => {
     const { id } = c.req.valid('param');
@@ -33,10 +32,7 @@ const router = new Hono()
   })
   .post('/', zValidator('json', createTodoSchema), (c) => {
     const { title, description } = c.req.valid('json');
-    return c.json(
-      todoSchema.parse(todoRepository.create(title, description ?? null)),
-      HttpStatus.CREATED,
-    );
+    return c.json(todoSchema.parse(todoRepository.create(title, description)), HttpStatus.CREATED);
   })
   .put(
     '/:id',
