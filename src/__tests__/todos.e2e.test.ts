@@ -155,7 +155,13 @@ describe('PUT /api/todos/:id', () => {
     expect(res.status).toBe(404);
   });
 
-  it('Todoを全フィールド更新できる', async () => {
+  it('titleなしのPUTは400を返す', async () => {
+    const createdBody = await json(await req('POST', '/api/todos', { title: '元のタイトル' }));
+    const res = await req('PUT', `/api/todos/${createdBody.id}`, { completed: true });
+    expect(res.status).toBe(400);
+  });
+
+  it('全フィールドを指定してTodoを完全置換できる', async () => {
     const createdBody = await json(
       await req('POST', '/api/todos', { title: '元のタイトル', description: '元の説明' }),
     );
@@ -176,10 +182,11 @@ describe('PUT /api/todos/:id', () => {
     });
   });
 
-  it('titleだけを指定して更新すると他フィールドは変わらない', async () => {
+  it('titleだけのPUTでdescriptionとcompletedがデフォルトにリセットされる', async () => {
     const createdBody = await json(
       await req('POST', '/api/todos', { title: '元のタイトル', description: '元の説明' }),
     );
+    await req('PATCH', `/api/todos/${createdBody.id}`, { completed: true });
 
     const res = await req('PUT', `/api/todos/${createdBody.id}`, { title: '新しいタイトル' });
     const body = await json(res);
@@ -187,7 +194,7 @@ describe('PUT /api/todos/:id', () => {
     expect(res.status).toBe(200);
     expect(body).toMatchObject({
       title: '新しいタイトル',
-      description: '元の説明',
+      description: null,
       completed: false,
     });
   });

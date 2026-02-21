@@ -42,6 +42,23 @@ export const todoRepository = {
       .all()[0];
   },
 
+  replace(
+    id: number,
+    data: { title: string; description?: string | null; completed?: boolean },
+  ): TodoRow {
+    return db
+      .update(todos)
+      .set({
+        title: data.title,
+        description: data.description ?? null,
+        completed: data.completed ?? false,
+        updated_at: sql`(datetime('now'))`,
+      })
+      .where(eq(todos.id, id))
+      .returning()
+      .all()[0];
+  },
+
   remove(id: number): boolean {
     const info = db.delete(todos).where(eq(todos.id, id)).run();
     return info.changes > 0;

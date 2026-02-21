@@ -11,5 +11,12 @@ export const updateTodoSchema = z.object({
   completed: z.boolean().optional(),
 });
 
+export const replaceTodoSchema = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().nullable().optional(),
+  completed: z.boolean().optional(),
+});
+
 export type CreateTodoInput = z.infer<typeof createTodoSchema>;
 export type UpdateTodoInput = z.infer<typeof updateTodoSchema>;
+export type ReplaceTodoInput = z.infer<typeof replaceTodoSchema>;
