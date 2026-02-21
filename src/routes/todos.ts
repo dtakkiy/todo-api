@@ -2,7 +2,7 @@ import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
 import { HttpStatus } from '../constants/httpStatus';
 import { todoRepository } from '../repositories/todoRepository';
-import { createTodoSchema, updateTodoSchema } from '../schemas/todoSchema';
+import { createTodoSchema, replaceTodoSchema, updateTodoSchema } from '../schemas/todoSchema';
 
 const parseId = (raw: string): number | null => {
   const n = Number(raw);
@@ -28,14 +28,14 @@ const router = new Hono()
     const { title, description } = c.req.valid('json');
     return c.json(todoRepository.create(title, description ?? null), HttpStatus.CREATED);
   })
-  .put('/:id', zValidator('json', updateTodoSchema), (c) => {
+  .put('/:id', zValidator('json', replaceTodoSchema), (c) => {
     const id = parseId(c.req.param('id'));
     if (id === null) return c.json({ error: 'Invalid ID' }, HttpStatus.BAD_REQUEST);
 
     const existing = todoRepository.findById(id);
     if (!existing) return c.json({ error: 'Todo not found' }, HttpStatus.NOT_FOUND);
 
-    return c.json(todoRepository.update(id, c.req.valid('json'), existing));
+    return c.json(todoRepository.replace(id, c.req.valid('json')));
   })
   .patch('/:id', zValidator('json', updateTodoSchema), (c) => {
     const id = parseId(c.req.param('id'));
