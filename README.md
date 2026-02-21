@@ -1,6 +1,19 @@
 # Todo API
 
-Express + TypeScript + SQLite の Todo REST API。
+Hono + TypeScript + SQLite の Todo REST API。
+
+## 使用技術
+
+- **ランタイム**: Node.js
+- **フレームワーク**: Hono
+- **言語**: TypeScript
+- **データベース**: SQLite
+- **ORM**: Drizzle ORM
+- **バリデーション**: Zod
+- **パッケージマネージャー**: pnpm
+- **リンター / フォーマッター**: Biome
+- **テスト**: Vitest
+- **Git フック**: Husky
 
 ## セットアップ
 

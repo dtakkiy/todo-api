@@ -1,7 +1,7 @@
 {
   "name": "todo-api",
   "version": "1.0.0",
-  "description": "Todo API with Express, TypeScript, and SQLite",
+  "description": "Todo API with Hono, TypeScript, and SQLite",
   "main": "dist/index.js",
   "packageManager": "pnpm@9.12.3",
   "scripts": {
