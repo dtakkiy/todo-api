@@ -2,7 +2,7 @@ import { desc, eq, sql } from 'drizzle-orm';
 import type { Context } from 'hono';
 import db from '../db/database';
 import { type TodoRow, todos } from '../db/schema';
-import { createTodoSchema, updateTodoSchema } from '../validators/todoValidator';
+import { createTodoSchema, updateTodoSchema } from '../schemas/todoSchema';
 
 export const getAllTodos = (c: Context): Response => {
   const completed = c.req.query('completed');
