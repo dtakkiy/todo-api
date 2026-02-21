@@ -6,15 +6,26 @@ import * as schema from './schema';
 
 const DB_PATH = process.env.DB_PATH ?? './todos.db';
 
-export const sqlite =
-  DB_PATH === ':memory:' ? new Database(':memory:') : new Database(path.resolve(DB_PATH));
+let sqlite: Database.Database;
+try {
+  sqlite = DB_PATH === ':memory:' ? new Database(':memory:') : new Database(path.resolve(DB_PATH));
+  sqlite.pragma('journal_mode = WAL');
+  sqlite.pragma('foreign_keys = ON');
+} catch (err) {
+  console.error('Database initialization failed:', err);
+  process.exit(1);
+}
 
-sqlite.pragma('journal_mode = WAL');
-sqlite.pragma('foreign_keys = ON');
+export { sqlite };
 
 export const db = drizzle(sqlite, { schema });
-migrate(db, {
-  migrationsFolder: process.env.MIGRATIONS_PATH ?? path.join(process.cwd(), 'drizzle'),
-});
+try {
+  migrate(db, {
+    migrationsFolder: process.env.MIGRATIONS_PATH ?? path.join(process.cwd(), 'drizzle'),
+  });
+} catch (err) {
+  console.error('Migration failed:', err);
+  process.exit(1);
+}
 
 export default db;
