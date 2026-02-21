@@ -94,9 +94,33 @@ describe('GET /api/todos/:id', () => {
     expect(body.created_at).toBeDefined();
     expect(body.updated_at).toBeDefined();
   });
+
+  it('存在しないIDで404を返す', async () => {
+    const res = await req('GET', '/api/todos/99999');
+    expect(res.status).toBe(404);
+  });
+
+  it('不正なIDで400を返す', async () => {
+    const res = await req('GET', '/api/todos/abc');
+    expect(res.status).toBe(400);
+  });
 });
 
 describe('POST /api/todos', () => {
+  it('titleなしで400を返す', async () => {
+    const res = await req('POST', '/api/todos', { description: '説明のみ' });
+    expect(res.status).toBe(400);
+  });
+
+  it('不正なJSONで400を返す', async () => {
+    const res = await app.request('/api/todos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{invalid json',
+    });
+    expect(res.status).toBe(400);
+  });
+
   it('titleだけでTodoを作成できる', async () => {
     const res = await req('POST', '/api/todos', { title: '新しいTodo' });
     const body = await json(res);
@@ -126,6 +150,11 @@ describe('POST /api/todos', () => {
 });
 
 describe('PUT /api/todos/:id', () => {
+  it('存在しないIDで404を返す', async () => {
+    const res = await req('PUT', '/api/todos/99999', { title: '更新' });
+    expect(res.status).toBe(404);
+  });
+
   it('Todoを全フィールド更新できる', async () => {
     const createdBody = await json(
       await req('POST', '/api/todos', { title: '元のタイトル', description: '元の説明' }),
@@ -191,6 +220,11 @@ describe('PATCH /api/todos/:id', () => {
 });
 
 describe('DELETE /api/todos/:id', () => {
+  it('存在しないIDで404を返す', async () => {
+    const res = await req('DELETE', '/api/todos/99999');
+    expect(res.status).toBe(404);
+  });
+
   it('Todoを削除すると204を返す', async () => {
     const createdBody = await json(await req('POST', '/api/todos', { title: '削除対象Todo' }));
 
